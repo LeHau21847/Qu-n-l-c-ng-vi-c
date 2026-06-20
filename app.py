@@ -639,6 +639,33 @@ def delete_hoso(id):
     flash(f"Đã xoá vĩnh viễn hồ sơ {ma_hoso_tam} ({ten_hoso_tam}) và các tệp đính kèm liên quan.", "info")
     return redirect(url_for('index'))
 
+@app.route('/tra_cuu', methods=['GET'])
+@login_required
+def tra_cuu():
+    tu_khoa = request.args.get('tu_khoa', '').strip()
+    ket_qua = []
+    
+    # Get user quick note for sidebar
+    sidebar_quick_note = None
+    if current_user:
+        tk = TaiKhoan.query.filter_by(username=current_user).first()
+        if tk and tk.quick_note:
+            sidebar_quick_note = tk.quick_note[0]
+            
+    if tu_khoa:
+        search_pattern = f"%{tu_khoa}%"
+        ket_qua = HoSo.query.filter(
+            db.or_(
+                HoSo.ten_nguoi_dan.ilike(search_pattern),
+                HoSo.ma_ho_so.ilike(search_pattern),
+                HoSo.ten_chu_ho.ilike(search_pattern),
+                HoSo.cccd_chu_ho.ilike(search_pattern),
+                HoSo.nhan_khau_kem_theo.ilike(search_pattern)
+            )
+        ).order_by(HoSo.ngay_tao.desc()).limit(100).all()
+        
+    return render_template('tra_cuu.html', tu_khoa=tu_khoa, ket_qua=ket_qua, sidebar_quick_note=sidebar_quick_note)
+
 # --- ROUTES CẤU HÌNH ---
 @app.route('/cau_hinh')
 @admin_required

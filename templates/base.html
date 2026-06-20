@@ -42,6 +42,11 @@
                 </a>
             </li>
             {% endif %}
+            <li class="nav-item">
+                <a href="{{ url_for('tra_cuu') }}" class="nav-link {% if request.endpoint == 'tra_cuu' %}active{% endif %}">
+                    <i class="fa-solid fa-magnifying-glass"></i> Tra cứu tổng hợp
+                </a>
+            </li>
         </ul>
 
         <!-- QUICK NOTE IN SIDEBAR -->
