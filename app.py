@@ -75,6 +75,9 @@ class HoSo(db.Model):
     han_xu_ly = db.Column(db.DateTime, nullable=True)
     ghi_chu = db.Column(db.Text, nullable=True)
     is_tra_lai = db.Column(db.Boolean, default=False)
+    ngay_sinh = db.Column(db.String(20), nullable=True)
+    dia_chi = db.Column(db.String(255), nullable=True)
+    nhan_khau_kem_theo = db.Column(db.Text, nullable=True)
     cac_dinh_kem = db.relationship('HoSoDinhKem', backref='ho_so', lazy=True, cascade="all, delete-orphan")
 
     @property
@@ -193,6 +196,12 @@ with app.app_context():
     except: db.session.rollback()
     try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN han_xu_ly DATETIME;"))
+        db.session.commit()
+    except: db.session.rollback()
+    try:
+        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN ngay_sinh VARCHAR(20);"))
+        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN dia_chi VARCHAR(255);"))
+        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN nhan_khau_kem_theo TEXT;"))
         db.session.commit()
     except: db.session.rollback()
 
@@ -360,6 +369,10 @@ def add_hoso():
         ghi_chu = request.form.get('ghi_chu', '').strip()
         han_xu_ly_str = request.form.get('han_xu_ly', '').strip()
         
+        ngay_sinh = request.form.get('ngay_sinh', '').strip()
+        dia_chi = request.form.get('dia_chi', '').strip()
+        nhan_khau_kem_theo = request.form.get('nhan_khau_kem_theo', '').strip()
+        
         if ma_ho_so and ten_nguoi_dan and loai_id:
             loai_id_int = int(loai_id)
             old_hoso = HoSo.query.filter_by(ma_ho_so=ma_ho_so.upper()).first()
@@ -381,13 +394,16 @@ def add_hoso():
 
                 new_hoso = HoSo(
                     ma_ho_so=ma_ho_so.upper(),
-                    ten_nguoi_dan=ten_nguoi_dan,
+                    ten_nguoi_dan=ten_nguoi_dan.upper(),
                     ten_khong_dau=tao_chuoi_khong_dau(ten_nguoi_dan),
                     loai_ho_so_id=loai_id_int,
                     buoc_hien_tai_id=buoc_dau_tien.id if buoc_dau_tien else None,
                     ngay_cap_nhat_buoc=datetime.now(),
                     ghi_chu=ghi_chu,
-                    han_xu_ly=han_xu_ly_dt
+                    han_xu_ly=han_xu_ly_dt,
+                    ngay_sinh=ngay_sinh,
+                    dia_chi=dia_chi,
+                    nhan_khau_kem_theo=nhan_khau_kem_theo
                 )
                 db.session.add(new_hoso)
                 db.session.commit()
