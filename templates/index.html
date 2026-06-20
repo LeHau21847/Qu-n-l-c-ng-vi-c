@@ -159,6 +159,9 @@
                         <td>
                             <div class="text-muted small"><i class="fa-regular fa-clock me-1"></i> {{ hs.ngay_tao.strftime('%H:%M') }}</div>
                             <div style="font-size: 0.9rem">{{ hs.ngay_tao.strftime('%d/%m/%Y') }}</div>
+                            {% if hs.han_xu_ly %}
+                            <div class="mt-1 small fw-bold text-danger"><i class="fa-solid fa-calendar-xmark me-1"></i> Hạn: {{ hs.han_xu_ly.strftime('%d/%m/%Y') }}</div>
+                            {% endif %}
                         </td>
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
@@ -184,11 +187,13 @@
                                     <i class="fa-solid fa-rotate-left"></i>
                                 </button>
                                 {% endif %}
+                                {% if current_role == 'admin' %}
                                 <form action="{{ url_for('delete_hoso', id=hs.id) }}" method="POST" onsubmit="return confirm('CẢNH BÁO TỐI CAO: Thao tác này sẽ xoá vĩnh viễn hồ sơ khỏi bộ nhớ. Xác nhận tiếp tục?');">
                                     <button type="submit" class="btn btn-danger-cand btn-action shadow-sm" title="Xóa hồ sơ lỗi">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
                                 </form>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -204,6 +209,25 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Phân trang -->
+        {% if total_pages > 1 %}
+        <div class="d-flex justify-content-center mt-3 mb-3">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('index', page=page-1, tu_khoa=tu_khoa, loai_id=loai_id, tu_ngay=tu_ngay, den_ngay=den_ngay, trang_thai=trang_thai) }}">Trước</a>
+                </li>
+                {% for p in range(1, total_pages + 1) %}
+                <li class="page-item {% if page == p %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('index', page=p, tu_khoa=tu_khoa, loai_id=loai_id, tu_ngay=tu_ngay, den_ngay=den_ngay, trang_thai=trang_thai) }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+                <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('index', page=page+1, tu_khoa=tu_khoa, loai_id=loai_id, tu_ngay=tu_ngay, den_ngay=den_ngay, trang_thai=trang_thai) }}">Sau</a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -235,6 +259,10 @@
                             {% endfor %}
                         </select>
                         <div class="form-text mt-2"><i class="fa-solid fa-circle-info text-primary"></i> Hệ thống sẽ tự động chuyển HS này vào <strong>Bước 1</strong> của Danh mục.</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Hạn xử lý (Deadline - Tùy chọn)</label>
+                        <input type="datetime-local" class="form-control bg-light" name="han_xu_ly">
                     </div>
                     <div class="mt-3">
                         <label class="form-label">Ghi chú công việc (Nội dung cần lưu ý)</label>

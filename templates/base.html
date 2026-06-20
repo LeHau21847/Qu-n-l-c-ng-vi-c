@@ -35,11 +35,13 @@
                     <i class="fa-solid fa-house"></i> Bàn Làm Việc
                 </a>
             </li>
+            {% if current_role == 'admin' %}
             <li class="nav-item">
                 <a href="{{ url_for('cau_hinh') }}" class="nav-link {% if request.endpoint == 'cau_hinh' %}active{% endif %}">
                     <i class="fa-solid fa-gears"></i> Cấu hình
                 </a>
             </li>
+            {% endif %}
         </ul>
 
         <!-- QUICK NOTE IN SIDEBAR -->
@@ -63,7 +65,14 @@
             <button class="mobile-menu-btn-inline d-md-none" id="mobileMenuBtnInline">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <div class="ms-auto">
+            <div class="ms-auto d-flex align-items-center">
+                {% if current_user %}
+                <div class="me-3 text-muted fw-bold">
+                    <i class="fa-solid fa-user-circle me-1"></i> Xin chào, {{ current_user }}
+                    {% if current_role == 'admin' %}<span class="badge bg-danger ms-1">Admin</span>{% endif %}
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-secondary me-3"><i class="fa-solid fa-right-from-bracket"></i> Thoát</a>
+                {% endif %}
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="darkModeToggle">
                     <label class="form-check-label ms-1 text-muted fw-bold" for="darkModeToggle"><i class="fa-solid fa-moon"></i> <span class="d-none d-sm-inline">Giao diện Tối</span></label>
