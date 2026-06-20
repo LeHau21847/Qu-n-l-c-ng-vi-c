@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title-box">
+    <h1 class="page-title"><i class="fa-solid fa-industry me-2"></i> Thiết lập Quy trình Cốt lõi</h1>
+    <div class="fs-6 text-muted"><i class="fa-solid fa-circle-question me-1"></i> Tùy biến mọi bước theo quy trình thực tế</div>
+</div>
+
+<div class="config-layout">
+    <!-- CỘT TRÁI: LOẠI HỒ SƠ -->
+    <div class="config-left">
+        <div class="card card-cand mb-3 border-0">
+            <div class="card-header bg-dark text-white fw-bold px-4 py-3 border-0 rounded-top">
+                <i class="fa-solid fa-folder-tree me-2"></i> Danh Mục Hồ Sơ
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for loai in loai_ho_so_list %}
+                    <div class="loai-list-item {% if active_loai and active_loai.id == loai.id %}active{% endif %} d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('cau_hinh', loai_id=loai.id) }}" class="text-decoration-none d-flex align-items-center flex-grow-1" style="color: inherit">
+                            <i class="fa-solid fa-folder {% if active_loai and active_loai.id == loai.id %}text-primary{% else %}text-muted{% endif %} me-2"></i>
+                            {{ loai.ten_loai }}
+                        </a>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary rounded-pill" title="Số lượng bước xử lý thiết lập">{{ loai.cac_buoc|length }} bước</span>
+                            <form action="{{ url_for('xoa_loai', id=loai.id) }}" method="POST" onsubmit="return confirm('CẢNH BÁO: Xóa vĩnh viễn Danh mục này. Đồng ý?');">
+                                <button type="submit" class="btn btn-sm text-danger p-0 border-0 bg-transparent" title="Xóa Danh mục này"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">Chưa tạo danh mục nào.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body bg-light rounded">
+                <form action="{{ url_for('them_loai') }}" method="POST">
+                    <label class="form-label fw-bold text-dark mb-2">Thêm Mới Danh Mục Độc Lập</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="ten_loai" placeholder="VD: Khai báo nhân khẩu..." required>
+                        <button class="btn btn-primary-cand" type="submit"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-header bg-danger text-white fw-bold px-4 py-3 border-0 rounded-top">
+                <i class="fa-solid fa-shield-halved me-2"></i> An toàn Dữ liệu
+            </div>
+            <div class="card-body bg-light rounded-bottom text-center">
+                <p class="small text-muted mb-3 text-start">Tải xuống toàn bộ CSDL hiện tại để lưu trữ phòng trường hợp hỏng máy móc. Nếu muốn khôi phục, chỉ cần copy file tải về chép đè vào thư mục app.</p>
+                <a href="{{ url_for('backup_db') }}" class="btn btn-outline-danger w-100 fw-bold shadow-sm">
+                    <i class="fa-solid fa-download me-2"></i> SAO LƯU DỰ PHÒNG
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CỘT PHẢI: CHI TIẾT CÁC BƯỚC -->
+    <div class="config-right">
+        {% if active_loai %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-cand-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top py-3 px-4">
+                <span>
+                    <i class="fa-solid fa-gears me-2"></i> Trình tự xử lý của: <strong class="text-warning">{{ active_loai.ten_loai }}</strong>
+                </span>
+                <span class="badge bg-light text-primary">{{ active_loai.cac_buoc|length }} BƯỚC</span>
+            </div>
+            <div class="card-body p-4">
+                
+                <!-- Hiển thị luồng -->
+                <div class="mb-4">
+                    {% for buoc in active_loai.cac_buoc %}
+                    <div class="step-box rounded shadow-sm">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="step-number">{{ buoc.so_thu_tu }}</div>
+                            <div class="fw-semibold text-dark fs-5">{{ buoc.ten_buoc }}</div>
+                        </div>
+                        <form action="{{ url_for('xoa_buoc', buoc_id=buoc.id) }}" method="POST" onsubmit="return confirm('Xóa bước này sẽ làm mất tính toàn vẹn nếu đang có hồ sơ, bạn có chắc chắn?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded"><i class="fa-solid fa-xmark me-1"></i> Loại bỏ</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted border rounded bg-white">
+                        <i class="fa-solid fa-puzzle-piece fa-3x mb-3 text-secondary" style="opacity: 0.3"></i>
+                        <h5>Danh mục này đang trống trơn</h5>
+                        <p>Hãy thêm các bước đầu tiên bên dưới.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <hr class="text-muted opacity-25 my-4">
+
+                <!-- Form Thêm Bước Mới -->
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-plus text-primary me-2"></i> Khai báo Bước mới</h5>
+                <form action="{{ url_for('them_buoc') }}" method="POST" class="row bg-light p-3 rounded border">
+                    <input type="hidden" name="loai_id" value="{{ active_loai.id }}">
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-bold">Thứ tự chạy</label>
+                        <input type="number" class="form-control" name="so_thu_tu" placeholder="1, 2, 3..." required value="{{ (active_loai.cac_buoc[-1].so_thu_tu + 1) if active_loai.cac_buoc else 1 }}">
+                        <div class="form-text fs-7">Rất quan trọng!</div>
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label text-muted small fw-bold">Hành động cần làm / Tên bước</label>
+                        <input type="text" class="form-control" name="ten_buoc" placeholder="Hồ sơ tồn đọng, đang xác minh..." required>
+                    </div>
+                    <div class="col-md-2 d-grid align-items-end mt-3 mt-md-0">
+                        <button type="submit" class="btn btn-primary-cand"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        {% else %}
+        <!-- Trạng thái chờ -->
+        <div class="card border-0 h-100 bg-transparent shadow-none d-flex align-items-center justify-content-center text-muted text-center p-5">
+            <div>
+                <i class="fa-solid fa-arrow-pointer fa-4x mb-3 text-light"></i>
+                <h3 class="fw-bold text-secondary">Chưa chọn Loại hồ sơ</h3>
+                <p>Nhấp vào một danh mục bên trái để bắt đầu lập trình Quy trình.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

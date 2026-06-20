@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Hồ sơ</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <!-- Bootstrap 5 -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding: 2.5rem 1.5rem">
+            <a href="{{ url_for('index') }}" class="sidebar-brand">
+                <i class="fa-solid fa-folder-tree" style="font-size: 2.2rem; color: var(--cand-text-highlight)"></i>
+                <span style="font-size: 0.9rem; margin-top: 10px; letter-spacing: 1px; opacity: 0.8">QUẢN TRỊ CÔNG VIỆC</span>
+            </a>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i> Bàn Làm Việc
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('cau_hinh') }}" class="nav-link {% if request.endpoint == 'cau_hinh' %}active{% endif %}">
+                    <i class="fa-solid fa-gears"></i> Cấu hình
+                </a>
+            </li>
+        </ul>
+
+        <!-- QUICK NOTE IN SIDEBAR -->
+        <div class="sidebar-note">
+            <label><i class="fa-solid fa-pen-nib me-1"></i> Ghi chú công việc</label>
+            <form action="{{ url_for('luu_quick_note') }}" method="POST">
+                <textarea name="quick_note_content" placeholder="Ghi chú nhanh tại đây...">{{ sidebar_quick_note.noi_dung if sidebar_quick_note else 'Chưa có ghi chú...' }}</textarea>
+                <button type="submit" class="save-btn">Lưu sổ tay</button>
+            </form>
+        </div>
+
+        <div class="mt-auto p-3 text-center" style="font-size: 0.8rem; color: rgba(255,255,255,0.4)">
+            Hệ thống Nội bộ
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Utility Bar -->
+        <div class="d-flex justify-content-end mb-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                <label class="form-check-label ms-1 text-muted fw-bold" for="darkModeToggle"><i class="fa-solid fa-moon"></i> Giao diện Tối</label>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="fa-solid fa-info-circle me-2"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Content Block -->
+        {% block content %}{% endblock %}
+
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<script>
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+    
+    // Load trạng thái Dark Mode từ LocalStorage
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        body.classList.add('dark-mode');
+        if (darkModeToggle) darkModeToggle.checked = true;
+    }
+    
+    // Xử lý sự kiện bật/tắt
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+    }
+</script>
+</body>
+</html>

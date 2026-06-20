@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Title & Action -->
+<div class="page-title-box">
+    <h1 class="page-title"><i class="fa-solid fa-chart-line me-2"></i> Tổng Quan Tình Hình</h1>
+    <button class="btn btn-accent px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+        <i class="fa-solid fa-plus me-1"></i> Tiếp nhận Hồ Sơ mới
+    </button>
+</div>
+
+<!-- Statistic Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card primary">
+            <div>
+                <div class="stat-title">Tổng Hồ Sơ Nhận</div>
+                <div class="stat-value">{{ tong_ho_so }}</div>
+            </div>
+            <i class="fa-solid fa-file-contract stat-icon stat-primary-icon"></i>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card warning">
+            <div>
+                <div class="stat-title">Đang Xử Lý & Chờ Duyệt</div>
+                <div class="stat-value">{{ dang_xu_ly }}</div>
+            </div>
+            <i class="fa-solid fa-hourglass-half stat-icon stat-warning-icon"></i>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card success">
+            <div>
+                <div class="stat-title">Đã Hoàn Tất Xử Lý</div>
+                <div class="stat-value">{{ hoan_tat }}</div>
+            </div>
+            <i class="fa-solid fa-check-double stat-icon stat-success-icon"></i>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card" style="border-left-color: #ef4444;">
+            <div>
+                <div class="stat-title" style="color: #ef4444;">Hồ Sơ Trả Lại</div>
+                <div class="stat-value" style="color: #ef4444;">{{ tra_lai }}</div>
+            </div>
+            <i class="fa-solid fa-rotate-left stat-icon" style="color: rgba(239,68,68,0.2);"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Biểu đồ Thống kê -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-muted mb-3 text-uppercase" style="font-size: 0.85rem;"><i class="fa-solid fa-chart-pie me-2"></i>Tỉ lệ Xử lý</h6>
+                <canvas id="chartStatus" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-muted mb-3 text-uppercase" style="font-size: 0.85rem;"><i class="fa-solid fa-chart-bar me-2"></i>Phân bố Loại</h6>
+                <canvas id="chartLoai" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-muted mb-3 text-uppercase" style="font-size: 0.85rem;"><i class="fa-solid fa-chart-line me-2"></i>Biến động Lưu lượng</h6>
+                <canvas id="chartTrend" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Bộ lọc Tìm kiếm -->
+<div class="search-container">
+    <form action="{{ url_for('index') }}" method="GET" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label" style="font-size: 0.85rem; font-weight: 600; color: #64748b">CCCD/Tên</label>
+            <input type="text" class="form-control" name="tu_khoa" placeholder="Từ khóa..." value="{{ tu_khoa }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" style="font-size: 0.85rem; font-weight: 600; color: #64748b">Trạng thái hồ sơ</label>
+            <select class="form-select" name="trang_thai">
+                <option value="">-- Tất cả --</option>
+                <option value="dang_xu_ly" {% if trang_thai == 'dang_xu_ly' %}selected{% endif %}>Đang xử lý</option>
+                <option value="hoan_tat" {% if trang_thai == 'hoan_tat' %}selected{% endif %}>Hoàn tất</option>
+                <option value="tra_lai" {% if trang_thai == 'tra_lai' %}selected{% endif %}>Bị trả lại</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" style="font-size: 0.85rem; font-weight: 600; color: #64748b">Loại danh mục</label>
+            <select class="form-select" name="loai_id">
+                <option value="">-- Tất cả loại --</option>
+                {% for loai in loai_ho_so_list %}
+                <option value="{{ loai.id }}" {% if loai_id == loai.id|string %}selected{% endif %}>{{ loai.ten_loai }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" style="font-size: 0.85rem; font-weight: 600; color: #64748b">Từ ngày</label>
+            <input type="date" class="form-control" name="tu_ngay" value="{{ tu_ngay }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" style="font-size: 0.85rem; font-weight: 600; color: #64748b">Đến ngày</label>
+            <input type="date" class="form-control" name="den_ngay" value="{{ den_ngay }}">
+        </div>
+        <div class="col-md-12 d-flex gap-2 justify-content-end">
+            <button type="submit" class="btn btn-primary-cand py-2 px-4"><i class="fa-solid fa-filter me-2"></i> Lọc bảng</button>
+            <a href="{{ url_for('export_excel', tu_khoa=tu_khoa, loai_id=loai_id, tu_ngay=tu_ngay, den_ngay=den_ngay, trang_thai=trang_thai) }}" class="btn btn-outline-success py-2 border shadow-sm" title="Xuất báo cáo Excel theo bộ lọc hiện tại">
+                <i class="fa-solid fa-file-excel"></i> Xuất
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Bảng danh sách -->
+<div class="card card-cand">
+    <div class="card-cand-header">
+        <i class="fa-solid fa-list-ul me-2"></i> Danh Sách Hồ Sơ Thực Tế
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th width="15%">CCCD / CMND</th>
+                        <th width="20%">Họ tên công dân</th>
+                        <th width="20%">Thông tin Phân loại</th>
+                        <th width="15%">Trạng thái</th>
+                        <th width="15%">Khởi tạo</th>
+                        <th width="15%" class="text-center">Điều lệnh</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hs in danh_sach %}
+                    <tr>
+                        <td><strong style="color: var(--cand-primary)">{{ hs.ma_ho_so }}</strong></td>
+                        <td>
+                            <div class="fw-semibold">{{ hs.ten_nguoi_dan }}</div>
+                            {% if hs.ghi_chu %}
+                            <small class="ghi-chu-table" title="{{ hs.ghi_chu }}">{{ hs.ghi_chu }}</small>
+                            {% endif %}
+                            {% if not hs.is_hoan_tat() and not hs.is_tra_lai and hs.so_ngay_ton >= 3 %}
+                            <div class="mt-1"><span class="badge bg-danger bg-opacity-75" title="Hồ sơ đã đình trệ {{ hs.so_ngay_ton }} ngày ở bước này!"><i class="fa-solid fa-triangle-exclamation"></i> Kẹt {{ hs.so_ngay_ton }} ngày</span></div>
+                            {% endif %}
+                        </td>
+                        <td><span class="text-secondary" style="font-size: 0.9rem"><i class="fa-regular fa-folder-open me-1"></i> {{ hs.loai_ho_so.ten_loai if hs.loai_ho_so else 'Chưa phân loại' }}</span></td>
+                        <td>
+                            <span class="badge badge-custom {{ hs.get_badge_class() }}">
+                                {{ hs.get_trang_thai_label() }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="text-muted small"><i class="fa-regular fa-clock me-1"></i> {{ hs.ngay_tao.strftime('%H:%M') }}</div>
+                            <div style="font-size: 0.9rem">{{ hs.ngay_tao.strftime('%d/%m/%Y') }}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-light btn-action border shadow-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ hs.id }}" title="Xem chi tiết & Tiến trình">
+                                    <i class="fa-solid fa-eye text-primary"></i>
+                                </button>
+                                {% if not hs.is_hoan_tat() and not hs.is_tra_lai and hs.buoc_hien_tai_id %}
+                                <form action="{{ url_for('update_hoso', id=hs.id) }}" method="POST" onsubmit="return confirm('Bạn đã giải quyết xong và muốn chuyển hồ sơ này sang giai đoạn tiếp theo?');">
+                                    <button type="submit" class="btn btn-accent btn-action border border-1 border-white shadow-sm" title="Khẩn trương hoàn tất bước này">
+                                        <i class="fa-solid fa-arrow-right-running"></i> Xử lý
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if hs.is_tra_lai or hs.is_hoan_tat() %}
+                                <form action="{{ url_for('khoi_phuc_hoso', id=hs.id) }}" method="POST" onsubmit="return confirm('XÁC NHẬN: Bạn muốn khôi phục hồ sơ này về Bước 1 để xử lý lại từ đầu?');">
+                                    <button type="submit" class="btn btn-secondary btn-action shadow-sm border" title="Làm lại từ đầu">
+                                        <i class="fa-solid fa-trash-arrow-up"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if not hs.is_tra_lai %}
+                                <button type="button" class="btn btn-warning btn-action shadow-sm text-dark border" data-bs-toggle="modal" data-bs-target="#rejectModal{{ hs.id }}" title="Trả lại hồ sơ">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                                {% endif %}
+                                <form action="{{ url_for('delete_hoso', id=hs.id) }}" method="POST" onsubmit="return confirm('CẢNH BÁO TỐI CAO: Thao tác này sẽ xoá vĩnh viễn hồ sơ khỏi bộ nhớ. Xác nhận tiếp tục?');">
+                                    <button type="submit" class="btn btn-danger-cand btn-action shadow-sm" title="Xóa hồ sơ lỗi">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-box-open fa-3x mb-3 text-secondary" style="opacity: 0.5"></i>
+                            <h5 class="fw-bold">Chưa có dữ liệu thống kê</h5>
+                            <p>Bấm nút "Tiếp nhận Hồ Sơ mới" ở góc trên hoặc thay đổi bộ lọc.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Thêm Hồ Sơ -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header modal-header-cand">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-circle-plus me-2"></i> Mở Hồ sơ Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_hoso') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Số CCCD / CMND (Viết liền không khoảng trắng)</label>
+                        <input type="text" class="form-control bg-light" name="ma_ho_so" id="input_cccd" placeholder="012345678910" required maxlength="12" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                        <div id="cccd_hint" class="form-text text-success" style="display: none;"><i class="fa-solid fa-check-circle"></i> Đã điền tự động tên công dân!</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên nhân khẩu (In hoa có dấu)</label>
+                        <input type="text" class="form-control bg-light" name="ten_nguoi_dan" id="input_ten" placeholder="NGUYỄN VĂN A" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Phân loại (Danh mục)</label>
+                        <select class="form-select bg-light" name="loai_ho_so_id" required>
+                            <option value="" disabled selected>-- Chỉ định loại --</option>
+                            {% for loai in loai_ho_so_list %}
+                            <option value="{{ loai.id }}">{{ loai.ten_loai }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text mt-2"><i class="fa-solid fa-circle-info text-primary"></i> Hệ thống sẽ tự động chuyển HS này vào <strong>Bước 1</strong> của Danh mục.</div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Ghi chú công việc (Nội dung cần lưu ý)</label>
+                        <textarea class="form-control bg-light" name="ghi_chu" rows="2" placeholder="Nhập ghi chú ban đầu..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn fw-semibold text-secondary" data-bs-dismiss="modal">Đóng cửa sổ</button>
+                    <button type="submit" class="btn btn-primary-cand px-4"><i class="fa-solid fa-save me-2"></i> Lập Hồ sơ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CHI TIẾT HỒ SƠ (Một cái cho mỗi dòng) -->
+{% for hs in danh_sach %}
+<div class="modal fade" id="detailModal{{ hs.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-circle-info me-2 text-primary"></i> Chi tiết: {{ hs.ma_ho_so }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row">
+                    <div class="col-md-7 border-end position-relative">
+                        <!-- QR Code positioned top right -->
+                        <div class="position-absolute" style="top: 0; right: 15px; border: 1px solid #ccc; border-radius: 4px; padding: 2px; background: white;">
+                            <img src="{{ url_for('api_qr', id=hs.id) }}" alt="QR Code" width="80" height="80">
+                        </div>
+
+                        <label class="fw-bold text-muted small mb-2 text-uppercase">Thông tin hồ sơ</label>
+                        <h3 class="fw-bold text-dark mb-1">{{ hs.ten_nguoi_dan }}</h3>
+                        <div class="mb-4"><span class="badge bg-secondary">{{ hs.loai_ho_so.ten_loai if hs.loai_ho_so else 'Chưa phân loại' }}</span></div>
+                        
+                        <label class="fw-bold text-muted small mb-2 text-uppercase">Nội dung ghi chú</label>
+                        <div class="p-3 bg-light rounded border" style="min-height: 80px; white-space: pre-wrap; font-size: 0.95rem;">{{ hs.ghi_chu or 'Không có ghi chú.' }}</div>
+                        
+                        <div class="mt-4">
+                            <label class="fw-bold text-muted small mb-2 text-uppercase">Tài liệu Đính kèm ({{ hs.cac_dinh_kem|length }})</label>
+                            {% if hs.cac_dinh_kem %}
+                            <ul class="list-group mb-3 text-start mb-2" style="max-height: 150px; overflow-y: auto;">
+                                {% for dk in hs.cac_dinh_kem %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 border-0 bg-transparent">
+                                    <a href="{{ url_for('xem_file', filename=dk.file_path) }}" target="_blank" class="text-decoration-none small text-truncate" style="max-width: 80%;"><i class="fa-solid fa-paperclip me-2 text-secondary"></i> {{ dk.file_name }}</a>
+                                    <span class="text-muted" style="font-size: 0.7rem;">{{ dk.ngay_tai.strftime('%d/%m %H:%M') }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <div class="text-muted small fst-italic mb-3">Chưa có tài liệu đính kèm.</div>
+                            {% endif %}
+                            
+                            <form action="{{ url_for('upload_dinh_kem', id=hs.id) }}" method="POST" enctype="multipart/form-data">
+                                <div class="input-group input-group-sm">
+                                    <input type="file" class="form-control" name="file" multiple required>
+                                    <button class="btn btn-outline-secondary" type="submit" title="Tải file lên"><i class="fa-solid fa-upload"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="mt-4 text-muted small">
+                            <i class="fa-solid fa-clock me-1"></i> Khởi tạo lúc: {{ hs.ngay_tao.strftime('%H:%M - %d/%m/%Y') }}
+                        </div>
+                    </div>
+                    <div class="col-md-5 ps-4">
+                        <label class="fw-bold text-muted small mb-3 text-uppercase">Tiến độ thực hiện quy trình</label>
+                        <div class="timeline-modal">
+                            {% if hs.loai_ho_so %}
+                            {% for buoc in hs.loai_ho_so.cac_buoc %}
+                            {% set is_active = (buoc.id == hs.buoc_hien_tai_id) %}
+                            {% set is_completed = (buoc.so_thu_tu < hs.buoc_hien_tai.so_thu_tu) if hs.buoc_hien_tai else False %}
+                            
+                            <div class="timeline-item {% if is_completed %}completed{% elif is_active %}active{% endif %}">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">{{ buoc.ten_buoc }}</div>
+                                    <div class="timeline-status">
+                                        {% if is_completed %}<i class="fa-solid fa-circle-check text-success me-1"></i> Đã hoàn tất
+                                        {% elif is_active %}<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang thực hiện
+                                        {% else %}Chưa tới bước này{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-center py-3 text-muted">Không tìm thấy quy trình cho loại này.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- MODAL LÝ DO TỪ CHỐI (Mỗi dòng 1 cái) -->
+{% for hs in danh_sach %}
+{% if not hs.is_tra_lai %}
+<div class="modal fade" id="rejectModal{{ hs.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-triangle-exclamation me-2"></i> Trả lại Hồ sơ: {{ hs.ma_ho_so }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('tra_lai_hoso', id=hs.id) }}" method="POST">
+                <div class="modal-body p-4">
+                    <p>Hồ sơ của <strong>{{ hs.ten_nguoi_dan }}</strong> sẽ bị đánh dấu trả lại và ngưng theo dõi.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nhập lý do trả lại / từ chối (Bắt buộc):</label>
+                        <textarea class="form-control" name="ly_do_tra" rows="3" required placeholder="Nhập lý do vì sao ngâm hoặc trả lại hồ sơ này..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger fw-bold"><i class="fa-solid fa-rotate-left me-1"></i> Xác nhận Trả</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<script>
+    // Tự động gợi ý điền tên khi nhập đủ CCCD
+    document.addEventListener("DOMContentLoaded", function() {
+        const cccdInput = document.getElementById('input_cccd');
+        const tenInput = document.getElementById('input_ten');
+        const hint = document.getElementById('cccd_hint');
+
+        if(cccdInput) {
+            cccdInput.addEventListener('input', function() {
+                if(this.value.length === 12) {
+                    fetch('/api/cong_dan/' + this.value)
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data.found) {
+                                tenInput.value = data.ten;
+                                hint.style.display = 'block';
+                            } else {
+                                hint.style.display = 'none';
+                            }
+                        })
+                        .catch(err => console.log(err));
+                } else {
+                    hint.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+
+<script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+<script>
+    // Biểu đồ Cột: Trạng thái
+    const ctxStatus = document.getElementById('chartStatus');
+    if (ctxStatus) {
+        new Chart(ctxStatus, {
+            type: 'bar',
+            data: {
+                labels: ['Đang xử lý', 'Hoàn tất', 'Trả lại'],
+                datasets: [{
+                    label: 'Số lượng hồ sơ',
+                    data: [{{ dang_xu_ly }}, {{ hoan_tat }}, {{ tra_lai }}],
+                    backgroundColor: ['#f59e0b', '#10b981', '#ef4444'],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+
+    // Biểu đồ Cột: Tần suất Hồ sơ
+    const ctxLoai = document.getElementById('chartLoai');
+    if (ctxLoai) {
+        new Chart(ctxLoai, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_labels_loai | safe }},
+                datasets: [{
+                    label: 'Số lượng tiếp nhận',
+                    data: {{ chart_data_loai | safe }},
+                    backgroundColor: '#1d4ed8',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+
+    // Biểu đồ Đường (Trend Chart): Lưu lượng qua các ngày
+    const ctxTrend = document.getElementById('chartTrend');
+    if (ctxTrend) {
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels_trend | safe }},
+                datasets: [{
+                    label: 'Hồ sơ mới nhận',
+                    data: {{ chart_data_trend | safe }},
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                    x: { ticks: { maxRotation: 45, minRotation: 45 } }
+                }
+            }
+        });
+    }
+</script>
+
+{% endblock %}
