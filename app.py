@@ -192,29 +192,48 @@ def admin_required(f):
 
 with app.app_context():
     db.create_all()
+    engine_name = db.engine.name
+    dt_type = "TIMESTAMP" if engine_name == "postgresql" else "DATETIME"
+    blob_type = "BYTEA" if engine_name == "postgresql" else "BLOB"
+
     try:
-        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN ngay_cap_nhat_buoc DATETIME;"))
+        db.session.execute(text(f"ALTER TABLE ho_so ADD COLUMN ngay_cap_nhat_buoc {dt_type};"))
+        db.session.commit()
+    except: db.session.rollback()
+    try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN ten_khong_dau VARCHAR(100);"))
         db.session.commit()
     except: db.session.rollback()
     try:
-        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN han_xu_ly DATETIME;"))
+        db.session.execute(text(f"ALTER TABLE ho_so ADD COLUMN han_xu_ly {dt_type};"))
         db.session.commit()
     except: db.session.rollback()
     try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN ngay_sinh VARCHAR(20);"))
+        db.session.commit()
+    except: db.session.rollback()
+    try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN dia_chi VARCHAR(255);"))
+        db.session.commit()
+    except: db.session.rollback()
+    try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN nhan_khau_kem_theo TEXT;"))
         db.session.commit()
     except: db.session.rollback()
     try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN ten_chu_ho VARCHAR(100);"))
+        db.session.commit()
+    except: db.session.rollback()
+    try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN cccd_chu_ho VARCHAR(50);"))
+        db.session.commit()
+    except: db.session.rollback()
+    try:
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN quan_he_chu_ho VARCHAR(50);"))
         db.session.commit()
     except: db.session.rollback()
     try:
-        db.session.execute(text("ALTER TABLE ho_so_dinh_kem ADD COLUMN file_data BLOB;"))
+        db.session.execute(text(f"ALTER TABLE ho_so_dinh_kem ADD COLUMN file_data {blob_type};"))
         db.session.commit()
     except: db.session.rollback()
 
