@@ -213,6 +213,10 @@ with app.app_context():
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN quan_he_chu_ho VARCHAR(50);"))
         db.session.commit()
     except: db.session.rollback()
+    try:
+        db.session.execute(text("ALTER TABLE ho_so_dinh_kem ADD COLUMN file_data BLOB;"))
+        db.session.commit()
+    except: db.session.rollback()
 
     if LoaiHoSo.query.count() == 0:
         loai_mk = LoaiHoSo(ten_loai="Khai báo nhân khẩu")
