@@ -647,8 +647,9 @@ def tra_cuu():
     
     # Get user quick note for sidebar
     sidebar_quick_note = None
-    if current_user:
-        tk = TaiKhoan.query.filter_by(username=current_user).first()
+    username = session.get('username')
+    if username:
+        tk = TaiKhoan.query.filter_by(username=username).first()
         if tk and tk.quick_note:
             sidebar_quick_note = tk.quick_note[0]
             
