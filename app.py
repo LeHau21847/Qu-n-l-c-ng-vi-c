@@ -664,14 +664,7 @@ def tra_cuu():
     tu_khoa = request.args.get('tu_khoa', '').strip()
     ket_qua = []
     
-    # Get user quick note for sidebar
-    sidebar_quick_note = None
-    username = session.get('username')
-    if username:
-        tk = TaiKhoan.query.filter_by(username=username).first()
-        if tk and tk.quick_note:
-            sidebar_quick_note = tk.quick_note[0]
-            
+
     if tu_khoa:
         search_pattern = f"%{tu_khoa}%"
         ket_qua = HoSo.query.filter(
@@ -684,7 +677,7 @@ def tra_cuu():
             )
         ).order_by(HoSo.ngay_tao.desc()).limit(100).all()
         
-    return render_template('tra_cuu.html', tu_khoa=tu_khoa, ket_qua=ket_qua, sidebar_quick_note=sidebar_quick_note)
+    return render_template('tra_cuu.html', tu_khoa=tu_khoa, ket_qua=ket_qua)
 
 # --- ROUTES CẤU HÌNH ---
 @app.route('/cau_hinh')
