@@ -78,6 +78,9 @@ class HoSo(db.Model):
     ngay_sinh = db.Column(db.String(20), nullable=True)
     dia_chi = db.Column(db.String(255), nullable=True)
     nhan_khau_kem_theo = db.Column(db.Text, nullable=True)
+    ten_chu_ho = db.Column(db.String(100), nullable=True)
+    cccd_chu_ho = db.Column(db.String(50), nullable=True)
+    quan_he_chu_ho = db.Column(db.String(50), nullable=True)
     cac_dinh_kem = db.relationship('HoSoDinhKem', backref='ho_so', lazy=True, cascade="all, delete-orphan")
 
     @property
@@ -202,6 +205,12 @@ with app.app_context():
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN ngay_sinh VARCHAR(20);"))
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN dia_chi VARCHAR(255);"))
         db.session.execute(text("ALTER TABLE ho_so ADD COLUMN nhan_khau_kem_theo TEXT;"))
+        db.session.commit()
+    except: db.session.rollback()
+    try:
+        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN ten_chu_ho VARCHAR(100);"))
+        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN cccd_chu_ho VARCHAR(50);"))
+        db.session.execute(text("ALTER TABLE ho_so ADD COLUMN quan_he_chu_ho VARCHAR(50);"))
         db.session.commit()
     except: db.session.rollback()
 
@@ -373,6 +382,10 @@ def add_hoso():
         dia_chi = request.form.get('dia_chi', '').strip()
         nhan_khau_kem_theo = request.form.get('nhan_khau_kem_theo', '').strip()
         
+        ten_chu_ho = request.form.get('ten_chu_ho', '').strip()
+        cccd_chu_ho = request.form.get('cccd_chu_ho', '').strip()
+        quan_he_chu_ho = request.form.get('quan_he_chu_ho', '').strip()
+        
         if ma_ho_so and ten_nguoi_dan and loai_id:
             loai_id_int = int(loai_id)
             old_hoso = HoSo.query.filter_by(ma_ho_so=ma_ho_so.upper()).first()
@@ -403,7 +416,10 @@ def add_hoso():
                     han_xu_ly=han_xu_ly_dt,
                     ngay_sinh=ngay_sinh,
                     dia_chi=dia_chi,
-                    nhan_khau_kem_theo=nhan_khau_kem_theo
+                    nhan_khau_kem_theo=nhan_khau_kem_theo,
+                    ten_chu_ho=ten_chu_ho.upper() if ten_chu_ho else '',
+                    cccd_chu_ho=cccd_chu_ho,
+                    quan_he_chu_ho=quan_he_chu_ho
                 )
                 db.session.add(new_hoso)
                 db.session.commit()

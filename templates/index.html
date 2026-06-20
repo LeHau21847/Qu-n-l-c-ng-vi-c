@@ -257,8 +257,8 @@
                         </div>
                     </div>
 
-                    <!-- BƯỚC 2: Thông tin chủ hộ -->
-                    <h6 class="fw-bold text-primary text-uppercase mb-3 border-bottom border-primary pb-2"><i class="fa-solid fa-user-shield me-2"></i> 2. Thông tin Người đại diện / Chủ hộ</h6>
+                    <!-- BƯỚC 2: Thông tin người đại diện -->
+                    <h6 class="fw-bold text-primary text-uppercase mb-3 border-bottom border-primary pb-2"><i class="fa-solid fa-user-pen me-2"></i> 2. Thông tin Người đại diện (Người đi khai báo)</h6>
                     <div class="row mb-4">
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-semibold">Họ và tên (*)</label>
@@ -272,14 +272,44 @@
                             <label class="form-label fw-semibold">Số ĐDCN (CCCD) (*)</label>
                             <input type="text" class="form-control shadow-sm" name="ma_ho_so" required maxlength="12" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-8 mb-3">
                             <label class="form-label fw-semibold">Địa chỉ nơi ở hiện tại (*)</label>
                             <input type="text" class="form-control shadow-sm" name="dia_chi" required>
                         </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Quan hệ với chủ hộ (*)</label>
+                            <select class="form-select shadow-sm" name="quan_he_chu_ho" id="quanHeChuHoSelect" required onchange="toggleChuHoSection()">
+                                <option value="" disabled selected></option>
+                                <option value="Bản thân">Bản thân (Là chủ hộ)</option>
+                                <option value="Vợ">Vợ</option>
+                                <option value="Chồng">Chồng</option>
+                                <option value="Con đẻ">Con đẻ</option>
+                                <option value="Bố đẻ">Bố đẻ</option>
+                                <option value="Mẹ đẻ">Mẹ đẻ</option>
+                                <option value="Ở nhờ">Ở nhờ</option>
+                                <option value="Thuê trọ">Thuê trọ</option>
+                                <option value="Khác">Khác...</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- BƯỚC 3: Nhân khẩu kèm theo -->
-                    <h6 class="fw-bold text-primary text-uppercase mb-3 border-bottom border-primary pb-2"><i class="fa-solid fa-users me-2"></i> 3. Thông tin các nhân khẩu kèm theo</h6>
+                    <!-- BƯỚC 3: Thông tin chủ hộ -->
+                    <div id="chuHoSection">
+                        <h6 class="fw-bold text-primary text-uppercase mb-3 border-bottom border-primary pb-2"><i class="fa-solid fa-user-shield me-2"></i> 3. Thông tin Chủ hộ</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Họ và tên chủ hộ</label>
+                                <input type="text" class="form-control shadow-sm text-uppercase" name="ten_chu_ho" id="inputTenChuHo">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Số ĐDCN (CCCD) chủ hộ</label>
+                                <input type="text" class="form-control shadow-sm" name="cccd_chu_ho" id="inputCccdChuHo" maxlength="12" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BƯỚC 4: Nhân khẩu kèm theo -->
+                    <h6 class="fw-bold text-primary text-uppercase mb-3 border-bottom border-primary pb-2"><i class="fa-solid fa-users me-2"></i> 4. Thông tin các nhân khẩu kèm theo</h6>
                     <div class="table-responsive mb-4 shadow-sm" style="background: white; border-radius: 8px; border: 1px solid #dee2e6;">
                         <table class="table table-bordered align-middle mb-0" id="nkTable">
                             <thead style="background-color: #4B4932; color: #FFF2C5; font-size: 0.9rem;" class="text-center">
@@ -318,16 +348,21 @@
                                             <option value="Con đẻ">Con đẻ</option>
                                             <option value="Bố đẻ">Bố đẻ</option>
                                             <option value="Mẹ đẻ">Mẹ đẻ</option>
+                                            <option value="Ở nhờ">Ở nhờ</option>
+                                            <option value="Thuê trọ">Thuê trọ</option>
                                             <option value="Khác">Khác...</option>
                                         </select>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                        <div class="p-2 text-center" style="background-color: #2a2a2a;">
+                            <button type="button" class="btn btn-sm btn-outline-success border-0" onclick="addNkRow()"><i class="fa-solid fa-plus me-1"></i> Thêm nhân khẩu</button>
+                        </div>
                     </div>
                     <input type="hidden" name="nhan_khau_kem_theo" id="hidden_nhan_khau">
 
-                    <!-- BƯỚC 4: Ghi chú -->
+                    <!-- BƯỚC 5: Ghi chú -->
                     <div class="mb-2">
                         <label class="form-label fw-semibold text-secondary">Ghi chú thêm (Nếu có)</label>
                         <textarea class="form-control shadow-sm" name="ghi_chu" rows="2"></textarea>
@@ -364,14 +399,29 @@
                         <h3 class="fw-bold text-dark mb-1">{{ hs.ten_nguoi_dan }}</h3>
                         <div class="mb-4"><span class="badge bg-secondary">{{ hs.loai_ho_so.ten_loai if hs.loai_ho_so else 'Chưa phân loại' }}</span></div>
                         
+                        <label class="fw-bold text-muted small mb-2 text-uppercase">1. Thông tin người đại diện (Khai báo)</label>
                         <div class="row mb-3">
+                            <div class="col-sm-6 text-muted small">Họ và tên:</div>
+                            <div class="col-sm-6 fw-bold">{{ hs.ten_nguoi_dan }}</div>
                             <div class="col-sm-6 text-muted small">Ngày sinh:</div>
                             <div class="col-sm-6 fw-bold">{{ hs.ngay_sinh or '---' }}</div>
                             <div class="col-sm-6 text-muted small">CCCD/CMND:</div>
                             <div class="col-sm-6 fw-bold">{{ hs.ma_ho_so }}</div>
                             <div class="col-sm-6 text-muted small">Địa chỉ:</div>
                             <div class="col-sm-6 fw-bold">{{ hs.dia_chi or '---' }}</div>
+                            <div class="col-sm-6 text-muted small">Quan hệ với chủ hộ:</div>
+                            <div class="col-sm-6 fw-bold text-primary">{{ hs.quan_he_chu_ho or '---' }}</div>
                         </div>
+
+                        {% if hs.quan_he_chu_ho != 'Bản thân' %}
+                        <label class="fw-bold text-muted small mb-2 text-uppercase">2. Thông tin chủ hộ</label>
+                        <div class="row mb-3 bg-light p-2 rounded border">
+                            <div class="col-sm-6 text-muted small">Họ và tên chủ hộ:</div>
+                            <div class="col-sm-6 fw-bold">{{ hs.ten_chu_ho or '---' }}</div>
+                            <div class="col-sm-6 text-muted small">CCCD chủ hộ:</div>
+                            <div class="col-sm-6 fw-bold">{{ hs.cccd_chu_ho or '---' }}</div>
+                        </div>
+                        {% endif %}
 
                         {% if hs.nhan_khau_kem_theo %}
                         <label class="fw-bold text-muted small mb-2 text-uppercase">Nhân khẩu kèm theo</label>
@@ -499,6 +549,106 @@
             });
         }
     });
+</script>
+
+<script>
+// Xử lý động Bảng Nhân Khẩu
+let nkRowCount = 1;
+
+function updateNkStt() {
+    const rows = document.querySelectorAll('#nkTableBody tr');
+    rows.forEach((row, index) => {
+        row.querySelector('.nk-stt').innerText = index + 1;
+    });
+    nkRowCount = rows.length;
+}
+
+function addNkRow() {
+    const tbody = document.getElementById('nkTableBody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeNkRow(this)"><i class="fa-solid fa-minus fs-5"></i></button>
+        </td>
+        <td class="text-center fw-bold nk-stt"></td>
+        <td><input type="text" class="form-control form-control-sm nk-name text-uppercase" style="background: #2a2a2a; color: white; border: 1px solid #444;" placeholder=""></td>
+        <td><input type="text" class="form-control form-control-sm nk-dob" style="background: #2a2a2a; color: white; border: 1px solid #444;" placeholder=""></td>
+        <td>
+            <select class="form-select form-select-sm nk-gender" style="background: #2a2a2a; color: white; border: 1px solid #444;">
+                <option value="">Chọn</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+            </select>
+        </td>
+        <td><input type="text" class="form-control form-control-sm nk-cccd" style="background: #2a2a2a; color: white; border: 1px solid #444;" maxlength="12" oninput="this.value = this.value.replace(/[^0-9]/g, '');"></td>
+        <td>
+            <select class="form-select form-select-sm nk-relation" style="background: #2a2a2a; color: white; border: 1px solid #444;">
+                <option value="">Chọn</option>
+                <option value="Vợ">Vợ</option>
+                <option value="Chồng">Chồng</option>
+                <option value="Con đẻ">Con đẻ</option>
+                <option value="Bố đẻ">Bố đẻ</option>
+                <option value="Mẹ đẻ">Mẹ đẻ</option>
+                <option value="Ở nhờ">Ở nhờ</option>
+                <option value="Thuê trọ">Thuê trọ</option>
+                <option value="Khác">Khác...</option>
+            </select>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    updateNkStt();
+}
+
+function removeNkRow(btn) {
+    const row = btn.closest('tr');
+    row.remove();
+    updateNkStt();
+}
+
+function toggleChuHoSection() {
+    const quanHe = document.getElementById('quanHeChuHoSelect').value;
+    const chuHoSection = document.getElementById('chuHoSection');
+    const inputTen = document.getElementById('inputTenChuHo');
+    const inputCccd = document.getElementById('inputCccdChuHo');
+    
+    if(quanHe === 'Bản thân') {
+        chuHoSection.style.display = 'none';
+        inputTen.required = false;
+        inputCccd.required = false;
+    } else {
+        chuHoSection.style.display = 'block';
+        inputTen.required = true;
+    }
+}
+
+// Chạy 1 lần khi load để set trạng thái mặc định
+document.addEventListener("DOMContentLoaded", function() {
+    toggleChuHoSection();
+});
+
+function prepareNhanKhau() {
+    let result = [];
+    const rows = document.querySelectorAll('#nkTableBody tr');
+    rows.forEach((row, index) => {
+        let name = row.querySelector('.nk-name').value.trim();
+        let dob = row.querySelector('.nk-dob').value.trim();
+        let gender = row.querySelector('.nk-gender').value;
+        let cccd = row.querySelector('.nk-cccd').value.trim();
+        let relation = row.querySelector('.nk-relation').value;
+        
+        if (name !== '') {
+            let parts = [];
+            parts.push(name.toUpperCase());
+            if (dob) parts.push(`Sinh: ${dob}`);
+            if (gender) parts.push(`Giới tính: ${gender}`);
+            if (cccd) parts.push(`CCCD: ${cccd}`);
+            if (relation) parts.push(`Quan hệ: ${relation}`);
+            
+            result.push(`- ` + parts.join(' | '));
+        }
+    });
+    document.getElementById('hidden_nhan_khau').value = result.join('\n');
+}
 </script>
 
 <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
